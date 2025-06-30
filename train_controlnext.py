@@ -213,6 +213,7 @@ def import_model_class_from_model_name_or_path(
     )
     model_class = text_encoder_config.architectures[0]
 
+
     if model_class == "CLIPTextModel":
         from transformers import CLIPTextModel
 
