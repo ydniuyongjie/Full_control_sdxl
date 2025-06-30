@@ -1,0 +1,6 @@
+*.log
+*.pyc
+*.pyo
+/VAE_model
+/SDXL_model
+/.vscode
