@@ -1,6 +1,7 @@
 *.log
 *.pyc
 *.pyo
+/train
 /VAE_model
 /SDXL_model
 /.vscode
