@@ -1239,8 +1239,6 @@ def main(args):
         unet, controlnet, optimizer, train_dataloader, lr_scheduler
     )
 
-    patch_accelerator_for_fp16_training(accelerator)
-
     # We need to recalculate our total training steps as the size of the training dataloader may have changed.
     num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
     if args.max_train_steps is None:
@@ -1265,14 +1263,6 @@ def main(args):
 
         accelerator.init_trackers(args.tracker_project_name, config=tracker_config)
     
-    def patch_accelerator_for_fp16_training(accelerator):
-        org_unscale_grads = accelerator.scaler._unscale_grads_
-
-        def _unscale_grads_replacer(optimizer, inv_scale, found_inf, allow_fp16):
-            return org_unscale_grads(optimizer, inv_scale, found_inf, True)
-
-        accelerator.scaler._unscale_grads_ = _unscale_grads_replacer
-
     if args.mixed_precision == "fp16":
         patch_accelerator_for_fp16_training(accelerator)
 
