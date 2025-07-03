@@ -923,6 +923,7 @@ def main(args):
         mixed_precision=args.mixed_precision,
         log_with=args.report_to,
         project_config=accelerator_project_config,
+        # device_placement=True  # 支持多卡训练
     )
 
     # Disable AMP for MPS.
@@ -1024,7 +1025,11 @@ def main(args):
         controlnet.load_state_dict(load_file(args.controlnet_model_name_or_path))
     else:
         logger.info("Initializing controlnet weights from scratch")
-
+    # ##-----------------------支持多卡训练
+    # if torch.cuda.device_count() > 1:
+    #     unet = torch.nn.parallel.DistributedDataParallel(unet)
+    #     controlnet = torch.nn.parallel.DistributedDataParallel(controlnet)
+    # ##-----------------------支持多卡训练
     def unwrap_model(model):
         model = accelerator.unwrap_model(model)
         model = model._orig_mod if is_compiled_module(model) else model
