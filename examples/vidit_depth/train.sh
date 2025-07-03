@@ -1,8 +1,9 @@
-accelerate launch train_controlnext.py --pretrained_model_name_or_path "stabilityai/stable-diffusion-xl-base-1.0" \
---pretrained_vae_model_name_or_path "madebyollin/sdxl-vae-fp16-fix" \
+accelerate launch --num_processes 2 --num_machines 1 --dynamo_backend no  ../../train_controlnext.py --pretrained_model_name_or_path "../../SDXL_model" \
+--pretrained_vae_model_name_or_path "../../VAE_model" \
 --variant fp16 \
+--train_batch_size 2 \
 --use_safetensors \
---output_dir "train/example" \
+--output_dir "example" \
 --logging_dir "logs" \
 --resolution 1024 \
 --gradient_checkpointing \
@@ -16,4 +17,4 @@ accelerate launch train_controlnext.py --pretrained_model_name_or_path "stabilit
 --conditioning_image_column "depth_map" \
 --caption_column "caption" \
 --validation_prompt "a stone tower on a rocky island" \
---validation_image "examples/vidit_depth/condition_0.png"
+--validation_image "condition_0.png"

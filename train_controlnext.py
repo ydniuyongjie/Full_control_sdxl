@@ -683,6 +683,13 @@ def parse_args(input_args=None):
             " more information see https://huggingface.co/docs/accelerate/v0.17.0/en/package_reference/accelerator#accelerate.Accelerator"
         ),
     )
+    ##修改了代码，符合多卡的训练要求
+    parser.add_argument(
+    "--num_processes",
+    type=int,
+    default=1,
+    help="Number of processes for distributed training"
+    )
 
     if input_args is not None:
         args = parser.parse_args(input_args)
@@ -1201,7 +1208,7 @@ def main(args):
         # fingerprint used by the cache for the other processes to load the result
         # details: https://github.com/huggingface/diffusers/pull/4038#discussion_r1266078401
         new_fingerprint = Hasher.hash(args)
-        train_dataset = train_dataset.map(compute_embeddings_fn, batched=True, new_fingerprint=new_fingerprint)
+        train_dataset = train_dataset.map(compute_embeddings_fn, batched=True, batch_size=8, new_fingerprint=new_fingerprint)#增加了batch_size,使用多卡要求
 
     del text_encoders, tokenizers
     gc.collect()
@@ -1348,7 +1355,12 @@ def main(args):
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
 
                 # ControlNet conditioning.
-                controlnet_image = batch["conditioning_pixel_values"].to(accelerator.device, dtype=controlnet.dtype)
+                unwrapped_controlnet = accelerator.unwrap_model(controlnet)
+                controlnet_image = batch["conditioning_pixel_values"].to(
+                                                accelerator.device,
+                                                dtype=unwrapped_controlnet.dtype # 从解包后的模型获取dtype
+                                                )
+                # controlnet_image = batch["conditioning_pixel_values"].to(accelerator.device, dtype=controlnet.dtype)
                 controls = controlnet(
                     controlnet_image,
                     timesteps,
